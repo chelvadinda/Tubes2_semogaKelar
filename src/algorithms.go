@@ -3,6 +3,8 @@ package algorithms
 
 import (
 	"WikiRacer/scraper"
+	"fmt"
+	"strings"
 	"sync"
 	"time"
 )
@@ -87,71 +89,77 @@ func BFS(startPage *scraper.Page, targetURL string, result *Result) {
 }
 
 // Algoritma IDS
-func IDS(startPage *scraper.Page, targetURL string, result *Result) {
-	// Mulai waktu
-	start := time.Now()
-
-	var wg sync.WaitGroup  // Memastikan semua Goroutine berjalan dengan teratur
-	depth := 0             // Inisialisasi kedalaman
-	linksChecked := 0      // Bagian dari hasil
-	articlesTraversed := 0 // Bagian dari hasil
-
-	// Loop hingga kedalaman = 9 (Cek QNA untuk referensi)
-	// Kondisi terminasi agar tidak terlalu lama melakukan proses-nya
-	for depth < 9 {
-		visited := make(map[string]bool)
-		queue := []*scraper.Page{startPage}
-		for len(queue) > 0 {
-			page := queue[0]
-			queue = queue[1:]
-
-			articlesTraversed++
-
-			if visited[page.URL] {
-				continue
-			}
-			visited[page.URL] = true
-
-			result.Route = getPath(page)
-
-			// Cek URL saat ini dengan targetURL
-			if page.URL == targetURL {
-				result.SearchTime = time.Since(start)
-				result.ArticlesChecked = linksChecked
-				result.ArticlesTraversed = articlesTraversed
-				result.Route = getPath(page)
-				return
-			}
-
-			// wg.Add(1) untuk menambah proses Goroutine yang dilakukan
-			wg.Add(1)
-			go func(p *scraper.Page) {
-				defer wg.Done()
-				scraper.PerformScrape(p)
-			}(page)
-
-			linksChecked += len(page.Links)
-
-			for _, link := range page.Links {
-				childPage := &scraper.Page{
-					Name:       *link,
-					URL:        *link,
-					VisitCheck: false,
-					Previous:   page,
-					Depth:      page.Depth + 1,
-				}
-				queue = append(queue, childPage)
-			}
-		}
-		wg.Wait()
-		depth++
+func IDS(sourceURL, targetURL string) Result {
+	// Kondisi kedalaman yang paling dalam = 9 (cek QNA)
+	const maxDepth = 9
+	source := &scraper.Page{
+		URL:   sourceURL,
+		Depth: 0,
 	}
 
-	// Mengirim hasil kosong apabila sudah terminasi dan tidak menemukan targetURL yang dicari
-	result.SearchTime = time.Since(start)
-	result.ArticlesChecked = linksChecked
-	result.ArticlesTraversed = articlesTraversed
-	result.Route = nil
+	var result Result
+	startTime := time.Now()
+
+	// Penerapan IDS
+	for depth := 0; depth <= maxDepth; depth++ {
+		fmt.Printf("Depth: %d\n", depth)
+		result = DFS(source, targetURL, depth)
+		if len(result.Route) > 0 {
+			result.SearchTime = time.Since(startTime)
+			return result
+		}
+	}
+
+	result.SearchTime = time.Since(startTime)
+	return result
+}
+
+// DFS sebagai kerangka IDS
+func DFS(page *scraper.Page, targetURL string, depth int) Result {
+	var result Result
+
+	// Kondisi target URL berhasil ditemukan
+	if page.URL == targetURL {
+		fmt.Println("Target found:", page.URL)
+		result.Route = append(result.Route, getPageTitle(page.Name))
+		return result
+	}
+	if depth <= 0 {
+		return result
+	}
+
+	// Proses scraping
+	scraper.PerformScrape(page)
+	result.ArticlesChecked++
+
+	for _, link := range page.Links {
+		childURL := *link
+		childPage := &scraper.Page{
+			Name:     getPageTitle(strings.TrimPrefix(childURL, "https://en.wikipedia.org/wiki/")),
+			URL:      childURL,
+			Previous: page,
+			Depth:    page.Depth + 1,
+		}
+
+		childResult := DFS(childPage, targetURL, depth-1)
+		result.ArticlesChecked += childResult.ArticlesChecked
+
+		if len(childResult.Route) > 0 {
+			result.Route = append(result.Route, getPageTitle(page.Name))
+			result.Route = append(result.Route, childResult.Route...)
+			return result
+		}
+	}
+
+	return result
+}
+
+// Fungsi untuk mendapat nama page agar bisa dikeluarkan
+func getPageTitle(pageName string) string {
+	if idx := strings.Index(pageName, " - Wikipedia"); idx != -1 {
+		return pageName[:idx]
+	}
+	return pageName
 }
 
 // Fungsi untuk mengirim path atau jalur dari page yang dilalui
