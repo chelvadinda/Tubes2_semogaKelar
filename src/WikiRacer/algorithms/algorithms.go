@@ -159,6 +159,10 @@ func DFS(page *scraper.Page, targetURL string, depth int) Result {
 
 // Fungsi untuk mendapat nama page agar bisa dikeluarkan
 func getPageTitle(pageName string) string {
+	// Menghilangkan _ dari nama halaman
+	pageName = strings.ReplaceAll(pageName, "_", " ")
+
+	// Menghilangkan " - Wikipedia" dari nama halaman
 	if idx := strings.Index(pageName, " - Wikipedia"); idx != -1 {
 		return pageName[:idx]
 	}
