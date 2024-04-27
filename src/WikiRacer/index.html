@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WikiRace</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WikiRace</h1>
+        </header>
+        <main>
+            <section class="search-section">
+                <h2>Enter the title of the article</h2>
+                <input type="text" id="start-article" placeholder="Enter Start Article">
+                <input type="text" id="target-article" placeholder="Enter Target Article">
+                <button onclick="startGame()">Start</button>
+            </section>
+            <section class="algorithm-section">
+                <h2>Choose Algorithm</h2>
+                <input type="radio" id="bfs" name="algorithm" value="bfs" checked>
+                <label for="bfs">BFS</label>
+                <input type="radio" id="ids" name="algorithm" value="ids" checked>
+                <label for="ids">IDS</label>
+            </section>
+            <section class="result-section">
+                <h2>Results</h2>
+                <p id="search-time">Search Time: </p>
+                <p id="articles-checked">Articles Checked: </p>
+                <p id="articles-traversed">Articles Traversed: </p>
+                <p id="route">Route: </p>
+            </section>
+        </main>
+        <footer>
+            <p>IF2211 - sK</p>
+        </footer>
+    </div>
+</body>
+</html>
