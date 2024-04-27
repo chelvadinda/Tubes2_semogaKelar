@@ -17,8 +17,8 @@
 1. Pastikan Go telah terinstal di komputer.
 2. Clone repository ini https://github.com/chelvadinda/Tubes2_semogaKelar.git ke dalam direktori lokal.
 3. Buka terminal dan arahkan ke direktori tempat menyimpan repository.
-4. Jalankan perintah go mod init WikiRacer untuk membuat modul WikiRacer
-5. Jalankan perintah go mod tidy untuk mendownload modul-modul yang dibutuhkan 
+4. Jalankan perintah `go mod init WikiRacer` untuk membuat modul WikiRacer
+5. Jalankan perintah `go mod tidy` untuk mendownload modul-modul yang dibutuhkan 
 6. Jalankan perintah `go run main.go` untuk run program.
 
 ## Contributors:
