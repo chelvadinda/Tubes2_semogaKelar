@@ -41,7 +41,7 @@ func startGameHandler(w http.ResponseWriter, r *http.Request) {
 	var result algorithms.Result
 	switch algorithm {
 	case "bfs":
-		result = algorithms.BFS(startArticle.URL, targetArticle.URL, algorithm)
+		result = algorithms.BFS(startArticle.URL, targetArticle.URL, algorithm, &startArticle)
 		result.ArticlesTraversed = len(result.Route)
 	case "ids":
 		result = algorithms.IDS(startArticle.URL, targetArticle.URL)
