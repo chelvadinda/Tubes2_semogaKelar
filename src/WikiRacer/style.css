@@ -1,0 +1,132 @@
+body{
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #333333; /* warna hitam */
+    color: #CCCCCC; /* warna abu-abu */
+}
+
+header {
+    background-color: #111111; /* warna abu-abu tua */
+    padding: 20px;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    z-index: 999; /* Menentukan lapisan teratas untuk header */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 36px;
+}
+
+main {
+    padding: 10px;
+}
+
+.container {
+    margin: 0 auto; /* Untuk mengatur posisi horizontal ke tengah */
+}
+
+.search-section  {
+    background-color: #222222; /* warna abu-abu sedang */
+    padding: 20px;
+    margin-top: 80px; /* Jarak antara search-section dengan header */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 80%; /* Lebar maksimal bagian search-section */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.algorithm-section {
+    background-color: #222222; 
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between; /* Mengatur penempatan elemen secara merata */
+    align-items: center;
+    max-width: 80%; /* Lebar maksimal bagian search-section */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.result-section{
+    background-color: #222222; 
+    padding: 20px;
+    margin-bottom: 50px;
+    display: flex;
+    flex-direction: column;
+    max-width: 80%; /* Lebar maksimal bagian search-section */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-section h2 {
+    text-align: center;
+}
+
+.search-section input, button {
+    text-align: center;
+    margin: 10px;
+    width: 100%; /* Lebar input dan tombol menjadi 100% */
+}
+
+.result-section h2 {
+    margin-top: 0;
+}
+
+.algorithm-section h2 { 
+    margin: 0; 
+    margin-right: 10px;
+    flex-grow: 1; /* Mengatur h2 agar dapat meregang dan label bergerak ke sisi kanan */
+}
+
+.algorithm-section label{ 
+    margin-right: 25%;
+}
+
+input[type="text"] {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #444444; /* warna abu-abu muda */
+    color: #CCCCCC; 
+}
+
+button {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #444444; /* warna abu-abu muda */
+    color: #CCCCCC; 
+    cursor: pointer;
+}
+
+input[type="text"]:focus, button:focus {
+    outline: none; /* Menghilangkan outline default browser */
+    border: 2px solid #4793AF; /* Menambahkan border biru saat input difokuskan */
+}
+
+footer {
+    background-color: #111111; 
+    padding: 10px;
+    text-align: center;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 999;
+}
+
+footer p {
+    margin: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 20px; /* Tambahkan padding ke kiri dan kanan pada kontainer saat layar lebih kecil dari 768px */
+    }
+}
