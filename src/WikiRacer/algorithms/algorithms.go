@@ -20,35 +20,33 @@ type Result struct {
 const maxDepth = 9
 
 // Algoritma BFS
-func BFS(startURL, targetURL string, algorithm string) Result {
-	// Inisialisasi page awal
-	source := &scraper.Page{
-		URL:   startURL,
-		Depth: 0,
-	}
-
+func BFS(startURL, targetURL string, algorithm string, start *scraper.Page) Result {
 	var result Result
 	startTime := time.Now()
 
-	// Queue BFS
-	queue := []*scraper.Page{source}
+	// Queue untuk BFS
+	queue := []*scraper.Page{start}
 
-	// Map untuk cek halaman Wikipedia yang sudah dikunjungi
+	// Map visited untuk melihat apakah suatu halaman sudah dilalui
 	visited := make(map[string]bool)
-	visited[source.URL] = true
+	visited[start.URL] = true
 
-	// Algoritma BFS
-	for len(queue) > 0 {
+	targetFound := false
+
+	// Looping untuk melakukan BFS
+	for len(queue) > 0 && !targetFound {
 		currentPage := queue[0]
 		queue = queue[1:]
 
-		// Kondisi apabila target URL = URL yang sekarang
+		// Kondisi untuk apabila targetURL sudah ditemukan
 		if currentPage.URL == targetURL {
-			result.Route = constructRoute(currentPage, algorithm)
+			result.Route = constructRoute(currentPage)
 			result.SearchTime = time.Since(startTime)
-			return result
+			targetFound = true
+			break
 		}
 
+		// Scrape di halaman saat ini
 		scraper.PerformScrape(currentPage)
 		result.ArticlesChecked++
 
@@ -61,27 +59,37 @@ func BFS(startURL, targetURL string, algorithm string) Result {
 					Previous: currentPage,
 					Depth:    currentPage.Depth + 1,
 				}
+
+				if childURL == targetURL {
+					// Construct the route
+					result.Route = append([]string{getPageTitle(start.Name)}, getPageTitle(strings.TrimPrefix(childURL, "https://en.wikipedia.org/wiki/")))
+					result.SearchTime = time.Since(startTime)
+					targetFound = true
+					break
+				}
+
 				queue = append(queue, childPage)
 				visited[childURL] = true
 			}
 		}
 	}
 
-	// Return apabila tidak ditemukan
-	result.SearchTime = time.Since(startTime)
+	// Apabila tidak ada hasilnya
+	if !targetFound {
+		result.SearchTime = time.Since(startTime)
+	}
+
 	return result
 }
 
 // Fungsi membangun rute traversal artikel
-func constructRoute(targetPage *scraper.Page, algorithm string) []string {
+func constructRoute(targetPage *scraper.Page) []string {
 	var route []string
 	current := targetPage
 
 	for current != nil {
 		pageTitle := current.Name
-		if algorithm == "BFS" {
-			pageTitle = strings.TrimSuffix(pageTitle, " - Wikipedia")
-		}
+		pageTitle = getPageTitle(pageTitle)
 		route = append(route, pageTitle)
 		current = current.Previous
 	}
