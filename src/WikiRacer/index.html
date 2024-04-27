@@ -27,7 +27,7 @@
             </section>
             <section class="result-section">
                 <h2>Results</h2>
-                <p id="search-time">Search Time (ms): </p>
+                <p id="search-time">Search Time: </p>
                 <p id="articles-checked">Articles Checked: </p>
                 <p id="articles-traversed">Articles Traversed: </p>
                 <p id="route">Route: </p>
@@ -49,7 +49,9 @@
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (xhr.status === 200) {
                         var response = JSON.parse(xhr.responseText);
-                        document.getElementById("search-time").innerText = "Search Time (ms): " + response.SearchTime;
+                        // Konversi waktu dari milidetik menjadi detik
+                        var searchTimeInSeconds = (response.SearchTime / 1000000000);
+                        document.getElementById("search-time").innerText = "Search Time: " + searchTimeInSeconds + "s";
                         document.getElementById("articles-checked").innerText = "Articles Checked: " + response.ArticlesChecked;
                         document.getElementById("articles-traversed").innerText = "Articles Traversed: " + response.ArticlesTraversed;
                         document.getElementById("route").innerText = "Route: " + response.Route;
