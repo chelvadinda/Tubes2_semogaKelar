@@ -67,10 +67,16 @@ main {
     text-align: center;
 }
 
-.search-section input, button {
+.search-section input{
     text-align: center;
     margin: 10px;
-    width: 100%; /* Lebar input dan tombol menjadi 100% */
+    width: 50%; 
+}
+
+.search-section button {
+    text-align: center;
+    margin: 10px;
+    width: 20%; 
 }
 
 .result-section h2 {
