@@ -27,7 +27,7 @@
             </section>
             <section class="result-section">
                 <h2>Results</h2>
-                <p id="search-time">Search Time: </p>
+                <p id="search-time">Search Time (ms): </p>
                 <p id="articles-checked">Articles Checked: </p>
                 <p id="articles-traversed">Articles Traversed: </p>
                 <p id="route">Route: </p>
@@ -37,5 +37,32 @@
             <p>IF2211 - sK</p>
         </footer>
     </div>
+    <script>
+        function startGame() {
+            var startArticle = document.getElementById("start-article").value;
+            var targetArticle = document.getElementById("target-article").value;
+            var algorithm = document.querySelector('input[name="algorithm"]:checked').value;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/startGame", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        document.getElementById("search-time").innerText = "Search Time (ms): " + response.SearchTime;
+                        document.getElementById("articles-checked").innerText = "Articles Checked: " + response.ArticlesChecked;
+                        document.getElementById("articles-traversed").innerText = "Articles Traversed: " + response.ArticlesTraversed;
+                        document.getElementById("route").innerText = "Route: " + response.Route;
+                    } else {
+                        console.error("Error:", xhr.statusText);
+                    }
+                }
+            };
+            var data = "start-article=" + encodeURIComponent(startArticle) +
+                       "&target-article=" + encodeURIComponent(targetArticle) +
+                       "&algorithm=" + encodeURIComponent(algorithm);
+            xhr.send(data);
+        }
+    </script>
 </body>
 </html>
