@@ -113,8 +113,8 @@ button {
 }
 
 input[type="text"]:focus, button:focus {
-    outline: none; /* Menghilangkan outline default browser */
-    border: 2px solid #4793AF; /* Menambahkan border biru saat input difokuskan */
+    outline: none; 
+    border: 2px solid #4793AF; /* Menambahkan border biru saat input */
 }
 
 footer {
