@@ -5,7 +5,6 @@ import (
 	"WikiRacer/scraper"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -17,81 +16,85 @@ type Result struct {
 	Route             []string
 }
 
+// Kondisi kedalaman yang paling dalam = 9 (cek QNA)
+const maxDepth = 9
+
 // Algoritma BFS
-func BFS(startPage *scraper.Page, targetURL string, result *Result) {
-	// Mulai waktu
-	start := time.Now()
-
-	var wg sync.WaitGroup               // Memastikan semua Goroutine berjalan dengan teratur
-	queue := []*scraper.Page{startPage} // Queue untuk menjalankan BFS
-	visited := make(map[string]bool)    // Map untuk menghindari page yang sudah dilalui
-	depth := 0                          // Inisialisasi depth untuk kondisi terminasi
-	linksChecked := 0                   // Bagian dari hasil
-	articlesTraversed := 0              // Bagian dari hasil
-
-	// Loop sepanjang queue dan berhenti kalau udah kedalaman = 9 (Cek QNA untuk referensi)
-	// Kondisi terminasi agar tidak terlalu lama melakukan proses-nya
-	for len(queue) > 0 && depth < 9 {
-		for _, page := range queue {
-			articlesTraversed++
-
-			if visited[page.URL] {
-				continue
-			}
-
-			visited[page.URL] = true
-
-			result.Route = getPath(page)
-
-			// Cek URL saat ini dengan targetURL
-			if page.URL == targetURL {
-				result.SearchTime = time.Since(start)
-				result.ArticlesChecked = linksChecked
-				result.ArticlesTraversed = articlesTraversed
-				result.Route = getPath(page)
-				return
-			}
-
-			// wg.Add(1) untuk menambah proses Goroutine yang dilakukan
-			wg.Add(1)
-			go func(p *scraper.Page) {
-				defer wg.Done()
-				scraper.PerformScrape(p)
-			}(page)
-
-			linksChecked += len(page.Links)
-
-			// Inisialisasi untuk setiap hyperlink di suatu page untuk dikunjungi
-			for _, link := range page.Links {
-				childPage := &scraper.Page{
-					Name:       *link,
-					URL:        *link,
-					VisitCheck: false,
-					Previous:   page,
-					Depth:      page.Depth + 1,
-				}
-				queue = append(queue, childPage)
-			}
-		}
-
-		depth++
-		queue = queue[len(queue):]
-
-		// Blok fungsi utama hingga semua proses selesai dilakukan
-		wg.Wait()
+func BFS(startURL, targetURL string, algorithm string) Result {
+	// Inisialisasi page awal
+	source := &scraper.Page{
+		URL:   startURL,
+		Depth: 0,
 	}
 
-	// Mengirim hasil kosong apabila sudah terminasi dan tidak menemukan targetURL yang dicari
-	result.SearchTime = time.Since(start)
-	result.ArticlesChecked = linksChecked
-	result.ArticlesTraversed = articlesTraversed
-	result.Route = nil
+	var result Result
+	startTime := time.Now()
+
+	// Queue BFS
+	queue := []*scraper.Page{source}
+
+	// Map untuk cek halaman Wikipedia yang sudah dikunjungi
+	visited := make(map[string]bool)
+	visited[source.URL] = true
+
+	// Algoritma BFS
+	for len(queue) > 0 {
+		currentPage := queue[0]
+		queue = queue[1:]
+
+		// Kondisi apabila target URL = URL yang sekarang
+		if currentPage.URL == targetURL {
+			result.Route = constructRoute(currentPage, algorithm)
+			result.SearchTime = time.Since(startTime)
+			return result
+		}
+
+		scraper.PerformScrape(currentPage)
+		result.ArticlesChecked++
+
+		for _, link := range currentPage.Links {
+			childURL := *link
+			if !visited[childURL] {
+				childPage := &scraper.Page{
+					Name:     getPageTitle(strings.TrimPrefix(childURL, "https://en.wikipedia.org/wiki/")),
+					URL:      childURL,
+					Previous: currentPage,
+					Depth:    currentPage.Depth + 1,
+				}
+				queue = append(queue, childPage)
+				visited[childURL] = true
+			}
+		}
+	}
+
+	// Return apabila tidak ditemukan
+	result.SearchTime = time.Since(startTime)
+	return result
+}
+
+// Fungsi membangun rute traversal artikel
+func constructRoute(targetPage *scraper.Page, algorithm string) []string {
+	var route []string
+	current := targetPage
+
+	for current != nil {
+		pageTitle := current.Name
+		if algorithm == "BFS" {
+			pageTitle = strings.TrimSuffix(pageTitle, " - Wikipedia")
+		}
+		route = append(route, pageTitle)
+		current = current.Previous
+	}
+
+	for i, j := 0, len(route)-1; i < j; i, j = i+1, j-1 {
+		route[i], route[j] = route[j], route[i]
+	}
+
+	return route
 }
 
 // Algoritma IDS
 func IDS(sourceURL, targetURL string) Result {
-	// Kondisi kedalaman yang paling dalam = 9 (cek QNA)
-	const maxDepth = 9
 	source := &scraper.Page{
 		URL:   sourceURL,
 		Depth: 0,
@@ -160,21 +163,4 @@ func getPageTitle(pageName string) string {
 		return pageName[:idx]
 	}
 	return pageName
-}
-
-// Fungsi untuk mengirim path atau jalur dari page yang dilalui
-func getPath(page *scraper.Page) []string {
-	var path []string
-	current := page
-
-	// Loop untuk append page dengan yang lebih akhir duluan
-	for current != nil {
-		path = append(path, current.Name)
-		current = current.Previous
-	}
-	// Membalikkan unsur path agar bisa menunjukkan page dari awal ke akhir
-	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
-		path[i], path[j] = path[j], path[i]
-	}
-	return path
 }
